@@ -1,0 +1,8 @@
+id: 2d32c24f3e3d788e63000e1cb88221068df215f4
+created: Li Jiang	lijgame@gmail.com	1583289472621	480
+heads: 3025b3dd5d8d23deb440f405cbe21a97ef039980
+source-head: a5eda41a61efb66a6c89156ce67b07d6f71d2407
+target: refs/heads/Pascal
+target-head: 5bc874af176224770da573eb0135b3494e553690
+content
+Fix build errors and warnings
