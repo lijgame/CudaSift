@@ -53,7 +53,7 @@ include_directories(
 
 #SET(CUDA_SEPARABLE_COMPILATION ON)
 
-cuda_add_executable(cudasift ${cuda_sources} ${sources} OPTIONS -arch=sm_35)
+cuda_add_executable(cudasift ${cuda_sources} ${sources})
 
 #cuda_add_executable(l2net l2netD.cu OPTIONS -arch=sm_35)
 

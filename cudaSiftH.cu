@@ -69,7 +69,7 @@ void FreeSiftTempMemory(float *memoryTmp)
     safeCall(cudaFree(memoryTmp));
 }
 
-void ExtractSift(SiftData &siftData, CudaImage &img, int numOctaves, double initBlur, float thresh, float lowestScale, bool scaleUp, float *tempMemory) 
+void ExtractSift(SiftData &siftData, CudaImage &img, int numOctaves, float initBlur, float thresh, float lowestScale, bool scaleUp, float *tempMemory) 
 {
   TimerGPU timer(0);
   unsigned int *d_PointCounterAddr;
@@ -143,7 +143,7 @@ void ExtractSift(SiftData &siftData, CudaImage &img, int numOctaves, double init
   printf("Incl prefiltering & memcpy =  %.2f ms %d\n\n", totTime, siftData.numPts);
 }
 
-int ExtractSiftLoop(SiftData &siftData, CudaImage &img, int numOctaves, double initBlur, float thresh, float lowestScale, float subsampling, float *memoryTmp, float *memorySub) 
+int ExtractSiftLoop(SiftData &siftData, CudaImage &img, int numOctaves, float initBlur, float thresh, float lowestScale, float subsampling, float *memoryTmp, float *memorySub)
 {
 #ifdef VERBOSE
   TimerGPU timer(0);
@@ -155,7 +155,7 @@ int ExtractSiftLoop(SiftData &siftData, CudaImage &img, int numOctaves, double i
     int p = iAlignUp(w/2, 128);
     subImg.Allocate(w/2, h/2, p, false, memorySub); 
     ScaleDown(subImg, img, 0.5f);
-    float totInitBlur = (float)sqrt(initBlur*initBlur + 0.5f*0.5f) / 2.0f;
+    float totInitBlur = sqrt(initBlur*initBlur + 0.5f*0.5f) / 2.0f;
     ExtractSiftLoop(siftData, subImg, numOctaves-1, totInitBlur, thresh, lowestScale, subsampling*2.0f, memoryTmp, memorySub + (h/2)*p);
   }
   ExtractSiftOctave(siftData, img, numOctaves, thresh, lowestScale, subsampling, memoryTmp);
@@ -316,7 +316,7 @@ double ScaleDown(CudaImage &res, CudaImage &src, float variance)
     float h_Kernel[5];
     float kernelSum = 0.0f;
     for (int j=0;j<5;j++) {
-      h_Kernel[j] = (float)expf(-(double)(j-2)*(j-2)/2.0/variance);      
+      h_Kernel[j] = expf(-(float)(j-2)*(j-2)/2.0f/variance);      
       kernelSum += h_Kernel[j];
     }
     for (int j=0;j<5;j++)
@@ -411,7 +411,7 @@ double LowPass(CudaImage &res, CudaImage &src, float scale)
     float kernelSum = 0.0f;
     float ivar2 = 1.0f/(2.0f*scale*scale);
     for (int j=-LOWPASS_R;j<=LOWPASS_R;j++) {
-      kernel[j+LOWPASS_R] = (float)expf(-(double)j*j*ivar2);
+      kernel[j+LOWPASS_R] = expf(-(float)j*j*ivar2);
       kernelSum += kernel[j+LOWPASS_R]; 
     }
     for (int j=-LOWPASS_R;j<=LOWPASS_R;j++) 
@@ -439,7 +439,7 @@ double LowPass(CudaImage &res, CudaImage &src, float scale)
 void PrepareLaplaceKernels(int numOctaves, float initBlur, float *kernel)
 {
   if (numOctaves>1) {
-    float totInitBlur = (float)sqrt(initBlur*initBlur + 0.5f*0.5f) / 2.0f;
+    float totInitBlur = sqrt(initBlur*initBlur + 0.5f*0.5f) / 2.0f;
     PrepareLaplaceKernels(numOctaves-1, totInitBlur, kernel);
   }
   float scale = pow(2.0f, -1.0f/NUM_SCALES);
@@ -448,7 +448,7 @@ void PrepareLaplaceKernels(int numOctaves, float initBlur, float *kernel)
     float kernelSum = 0.0f;
     float var = scale*scale - initBlur*initBlur;
     for (int j=0;j<=LAPLACE_R;j++) {
-      kernel[numOctaves*12*16 + 16*i + j] = (float)expf(-(double)j*j/2.0/var);
+      kernel[numOctaves*12*16 + 16*i + j] = expf(-(float)j*j/2.0f/var);
       kernelSum += (j==0 ? 1 : 2)*kernel[numOctaves*12*16 + 16*i + j]; 
     }
     for (int j=0;j<=LAPLACE_R;j++)
